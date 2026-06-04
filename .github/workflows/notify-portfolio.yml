@@ -1,0 +1,32 @@
+# Copy this workflow into project repos tagged with the "portfolio" topic.
+# Required GitHub secrets/variables on the project repo:
+#   PORTFOLIO_URL              — e.g. https://limam.dev
+#   PORTFOLIO_REVALIDATE_SECRET — the REVALIDATE_SECRET value from the portfolio's .env
+
+name: Notify portfolio
+
+on:
+  push:
+    branches: [main, master]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping portfolio revalidate endpoint
+        env:
+          PORTFOLIO_URL: ${{ vars.PORTFOLIO_URL }}
+          REVALIDATE_SECRET: ${{ secrets.PORTFOLIO_REVALIDATE_SECRET }}
+        run: |
+          SLUG=$(echo "${{ github.event.repository.name }}" \
+            | tr '[:upper:]' '[:lower:]' \
+            | sed 's/[^a-z0-9]/-/g' \
+            | sed 's/^-\|-$//g')
+
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            -X POST "${PORTFOLIO_URL}/api/revalidate" \
+            -H "Content-Type: application/json" \
+            -d "{\"secret\":\"${REVALIDATE_SECRET}\",\"slug\":\"${SLUG}\"}")
+
+          echo "Revalidate response: $HTTP_STATUS"
+          [ "$HTTP_STATUS" = "200" ] || exit 1
