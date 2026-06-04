@@ -24,7 +24,7 @@ jobs:
             | sed 's/^-\|-$//g')
 
           HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
-            -X POST "${PORTFOLIO_URL}/api/revalidate" \
+            -X POST "${PORTFOLIO_URL%/}/api/revalidate" \
             -H "Content-Type: application/json" \
             -d "{\"secret\":\"${REVALIDATE_SECRET}\",\"slug\":\"${SLUG}\"}")
 
