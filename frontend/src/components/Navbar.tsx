@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
+import LLMSelector from "./LLMSelector";
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -17,7 +18,8 @@ export default function Navbar() {
       </Link>
       {user && (
         <div className="flex items-center gap-4">
-          <span className="text-sm text-gray-600">{user.email}</span>
+          <LLMSelector />
+          <span className="text-sm text-gray-500 hidden sm:block">{user.email}</span>
           <button
             onClick={handleLogout}
             className="text-sm text-gray-500 hover:text-gray-900 transition-colors"

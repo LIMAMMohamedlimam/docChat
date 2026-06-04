@@ -44,12 +44,40 @@
 
 ## [2026-06-03] Strategy + Factory pattern for LLM providers
 
-**Context:** Need to support multiple LLM providers switchable at runtime.
+**Context:** Need to support multiple LLM providers switchable at runtime without changing call sites.
 
 **Options considered:**
-- DI container (inversify)
-- Simple factory function + strategy interface
+- DI container (inversify) — powerful but heavy, requires decorators + metadata
+- Simple factory function + strategy interface — one function, one interface, no extra deps
 
-**Decision:** Factory function (`llm.factory.ts`) + `ILLMProvider` interface.
+**Decision:** Factory function (`llm.factory.ts`) + `ILLMProvider` interface. Adding a new provider = create one file implementing `ILLMProvider` + add one line to the `providers` map.
 
-**Rationale:** Simpler than a DI container for MVP. Adding a new provider = one new file + one line in the factory map.
+**Rationale:** Simpler than a DI container for MVP. The factory is 10 lines; inversify would add ~100 lines of boilerplate and a tsconfig flag. The interface keeps every call site provider-agnostic.
+
+---
+
+## [2026-06-03] Lazy client initialization in LLM providers
+
+**Context:** Provider classes (Claude, OpenAI, Mistral) instantiate SDK clients that validate API keys at construction time. Factory tests run without real keys set.
+
+**Options considered:**
+- Eagerly instantiate in constructor (simple but breaks tests without keys)
+- Lazy-initialize the client on first `ask()` call
+
+**Decision:** Lazy initialization — `private client: SDK | null = null`, instantiated in a `getClient()` helper on first use.
+
+**Rationale:** Constructing a provider should not require a live API key — only calling `ask()` does. This also defers any network/auth validation to the actual request, which is the correct boundary.
+
+---
+
+## [2026-06-03] Prompt caching on Claude provider
+
+**Context:** The system prompt (document chunks) is large and identical across turns in a conversation.
+
+**Options considered:**
+- Send system prompt without cache_control (re-billed each turn)
+- Use Anthropic `cache_control: { type: "ephemeral" }` on the system prompt block
+
+**Decision:** Apply `cache_control: ephemeral` to the system prompt block in every Claude request.
+
+**Rationale:** Caches the document context for up to 5 minutes. In a multi-turn conversation this reduces input token cost by ~90% after the first turn. Zero code complexity cost.

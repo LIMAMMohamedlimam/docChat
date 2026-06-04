@@ -1,6 +1,6 @@
 # Architecture — DocChat
 
-_Last updated: Phase 2 & 3 — File Upload, Storage, Extraction & Chunking_
+_Last updated: Phase 4 — LLM Integration (Strategy Pattern)_
 
 ---
 
@@ -22,14 +22,23 @@ docChat/
 │       │   └── upload.ts                  # Multer: memory, 20MB, PDF/CSV/TXT
 │       ├── routes/
 │       │   ├── auth.routes.ts
-│       │   └── document.routes.ts
+│       │   ├── document.routes.ts
+│       │   └── chat.routes.ts
 │       ├── controllers/
 │       │   ├── auth.controller.ts
-│       │   └── document.controller.ts
+│       │   ├── document.controller.ts
+│       │   └── chat.controller.ts
 │       ├── services/
 │       │   ├── auth.service.ts            # bcrypt + JWT
 │       │   ├── storage.service.ts         # MinIO/S3 adapter
-│       │   └── extractor.service.ts       # PDF/CSV/TXT text extraction
+│       │   ├── extractor.service.ts       # PDF/CSV/TXT text extraction
+│       │   └── llm/
+│       │       ├── llm.interface.ts       # ILLMProvider, LLMMessage, LLMResponse
+│       │       ├── llm.factory.ts         # getLLMProvider(name) → ILLMProvider
+│       │       ├── claude.provider.ts     # Anthropic SDK + prompt caching
+│       │       ├── openai.provider.ts     # OpenAI SDK
+│       │       ├── mistral.provider.ts    # Mistral SDK
+│       │       └── ollama.provider.ts     # raw fetch to Ollama /api/chat
 │       ├── models/
 │       │   ├── user.model.ts              # DynamoDB Users table
 │       │   └── document.model.ts          # DynamoDB Documents table
@@ -128,6 +137,36 @@ POST /api/documents  (multipart/form-data, file field)
 | GET | /api/documents/:id | Yes | Get document + presigned URL |
 | GET | /api/documents/:id/chunks | Yes | Debug: get chunks |
 | DELETE | /api/documents/:id | Yes | Delete file + metadata |
+| POST | /api/chat | Yes | Chat with a document |
+
+---
+
+## Chat Flow
+
+```
+POST /api/chat  { documentId, message, history[] }
+  → authenticate (JWT)
+  → getDocumentById → ownership check
+  → getUserById → read preferredLLM
+  → getLLMProvider(preferredLLM) → ILLMProvider instance
+  → buildSystemPrompt(filename, chunks[:20])
+  → provider.ask(systemPrompt, [...history, { role:"user", content: message }])
+  → return { response, provider, model, tokensUsed }
+```
+
+## LLM Strategy Pattern
+
+```
+Controller
+  └─ getLLMProvider(name)          ← llm.factory.ts
+        └─ ILLMProvider.ask()      ← llm.interface.ts
+              ├─ ClaudeProvider    (@anthropic-ai/sdk, prompt caching)
+              ├─ OpenAIProvider    (openai SDK)
+              ├─ MistralProvider   (@mistralai/mistralai)
+              └─ OllamaProvider    (raw fetch, local)
+```
+
+Adding a new provider: create `newprovider.provider.ts` implementing `ILLMProvider` + add one line to `providers` map in `llm.factory.ts`.
 
 ---
 

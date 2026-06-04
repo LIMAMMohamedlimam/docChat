@@ -10,16 +10,20 @@
     "test": "jest --runInBand"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.100.1",
     "@aws-sdk/client-dynamodb": "^3.1061.0",
     "@aws-sdk/client-s3": "^3.1061.0",
     "@aws-sdk/lib-dynamodb": "^3.1061.0",
     "@aws-sdk/s3-request-presigner": "^3.1061.0",
+    "@mistralai/mistralai": "^2.2.5",
     "bcrypt": "^6.0.0",
     "csv-parse": "^6.2.1",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.3",
     "multer": "^2.1.1",
+    "ollama": "^0.6.3",
+    "openai": "^6.41.0",
     "pdf-parse": "^2.4.5"
   },
   "devDependencies": {

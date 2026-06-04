@@ -5,6 +5,38 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ---
 
+## [0.5.0] — 2026-06-04 — Phase 5: LLM Selector UI
+
+### Added
+- `frontend/src/components/LLMSelector.tsx` — dropdown to switch between Claude, GPT-4o mini, Mistral Small, and Ollama; calls `PATCH /api/auth/preferences` on change; shows a spinner while saving; disabled during in-flight request
+
+### Changed
+- `frontend/src/components/Navbar.tsx` — integrated `LLMSelector` between the logo and user email; email hidden on small screens to keep the nav uncluttered
+
+### Notes
+- Backend endpoints (`PATCH /api/auth/preferences`, `GET /api/auth/me`) and `AuthContext.updatePreferredLLM` were already implemented in Phase 1 — no backend changes needed
+
+---
+
+## [0.4.0] — 2026-06-03 — Phase 4: LLM Integration (Strategy Pattern)
+
+### Added
+- `backend/src/services/llm/llm.interface.ts` — `ILLMProvider`, `LLMMessage`, `LLMResponse` interfaces
+- `backend/src/services/llm/llm.factory.ts` — factory: providerName → `ILLMProvider` instance; `SUPPORTED_PROVIDERS` export
+- `backend/src/services/llm/claude.provider.ts` — Anthropic SDK (`claude-sonnet-4-6`); prompt caching (`cache_control: ephemeral`) on system prompt; lazy client init
+- `backend/src/services/llm/openai.provider.ts` — OpenAI SDK (`gpt-4o-mini`); lazy client init
+- `backend/src/services/llm/mistral.provider.ts` — Mistral SDK (`mistral-small-latest`); lazy client init
+- `backend/src/services/llm/ollama.provider.ts` — raw `fetch` to Ollama `/api/chat`; no SDK dependency; model: `llama3.2`
+- `backend/src/controllers/chat.controller.ts` — reads `user.preferredLLM`, fetches document chunks, builds system prompt with document context (capped at 20 chunks), calls provider, returns response + provider + model + tokensUsed
+- `backend/src/routes/chat.routes.ts` — `POST /api/chat` behind `authenticate`
+- `backend/tests/llm.factory.test.ts` — 5 tests: factory returns all supported providers, throws on unknown name, fresh instance per call, system prompt contains filename + chunks, history forwarded correctly
+
+### Changed
+- `backend/src/index.ts` — wired chat routes
+- `backend/jest.config.js` — added `transformIgnorePatterns` to handle ESM-only `@mistralai/mistralai` and `ollama` packages
+
+---
+
 ## [0.3.0] — 2026-06-03 — Phase 2 & 3: File Upload, Storage, Extraction & Chunking
 
 ### Added

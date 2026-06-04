@@ -39,22 +39,22 @@
 - [x] Tests: chunkText (4 passing)
 
 ## Phase 4 — LLM Integration
-- [ ] llm/llm.interface.ts
-- [ ] llm/llm.factory.ts
-- [ ] llm/claude.provider.ts
-- [ ] llm/openai.provider.ts
-- [ ] llm/mistral.provider.ts
-- [ ] llm/ollama.provider.ts
-- [ ] controllers/chat.controller.ts
-- [ ] routes/chat.routes.ts
-- [ ] Unit tests for factory + chat flow
-- [ ] Log in DECISIONS
+- [x] llm/llm.interface.ts
+- [x] llm/llm.factory.ts
+- [x] llm/claude.provider.ts (prompt caching, lazy client)
+- [x] llm/openai.provider.ts (lazy client)
+- [x] llm/mistral.provider.ts (lazy client)
+- [x] llm/ollama.provider.ts (raw fetch)
+- [x] controllers/chat.controller.ts
+- [x] routes/chat.routes.ts
+- [x] Unit tests: factory (5 tests), 12 total passing
+- [x] Log in DECISIONS
 
 ## Phase 5 — LLM Selector UI
 - [x] Backend: PATCH /api/auth/preferences (done in Phase 1)
 - [x] Backend: GET /api/auth/me (done in Phase 1)
-- [ ] Frontend: LLMSelector.tsx
-- [ ] Frontend: persist in AuthContext, call PATCH on change
+- [x] Frontend: LLMSelector.tsx — dropdown with spinner, disables during save
+- [x] Frontend: integrated in Navbar; AuthContext.updatePreferredLLM already wired
 
 ## Phase 6 — Chat UI
 - [ ] ChatPage.tsx (full implementation)

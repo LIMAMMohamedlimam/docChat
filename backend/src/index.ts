@@ -6,6 +6,7 @@ import { ensureUsersTable } from "./models/user.model";
 import { ensureDocumentsTable } from "./models/document.model";
 import authRoutes from "./routes/auth.routes";
 import documentRoutes from "./routes/document.routes";
+import chatRoutes from "./routes/chat.routes";
 
 const app = express();
 
@@ -17,6 +18,7 @@ app.get("/health", (_req, res) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/documents", documentRoutes);
+app.use("/api/chat", chatRoutes);
 
 app.use(errorHandler);
 
